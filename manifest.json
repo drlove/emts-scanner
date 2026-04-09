@@ -1,0 +1,18 @@
+{
+  "name": "EMTS Scanner",
+  "short_name": "Scanner",
+  "description": "QR and barcode scanner with local SQLite storage",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1a56db",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
