@@ -126,6 +126,15 @@ function dbCount() {
   return res[0]?.values[0][0] ?? 0;
 }
 
+function dbSelectLatestPRC() {
+  const res = sqlDB.exec(
+    "SELECT data, scanned_at FROM scans WHERE data LIKE 'PRC%' ORDER BY id DESC LIMIT 1"
+  );
+  if (!res.length) return null;
+  const { columns, values } = res[0];
+  return Object.fromEntries(columns.map((c, i) => [c, values[0][i]]));
+}
+
 // ─── Scanner ─────────────────────────────────────────────────────────────────
 function initScanner() {
   scanner = new Html5Qrcode('reader');
@@ -189,6 +198,7 @@ function onScanSuccess(text, result) {
   playBeep();
   dbInsert(text, format);
   renderTable();
+  renderPRCBanner();
   showLastScan(text);
   startCooldown();
 }
@@ -233,6 +243,7 @@ async function scanImageFile(file) {
     playBeep();
     dbInsert(text, format);
     renderTable();
+    renderPRCBanner();
     showToast('Scanned from image');
   } catch {
     showToast('No barcode detected in image', 'error');
@@ -250,6 +261,18 @@ function showLastScan(text) {
 
 function hideLastScan() {
   document.getElementById('lastScanBar').classList.remove('visible');
+}
+
+function renderPRCBanner() {
+  const banner = document.getElementById('prcBanner');
+  const record = dbSelectLatestPRC();
+  if (!record) {
+    banner.hidden = true;
+    return;
+  }
+  document.getElementById('prcBannerValue').textContent = record.data;
+  document.getElementById('prcBannerTime').textContent = fmtTime(record.scanned_at);
+  banner.hidden = false;
 }
 
 function renderTable() {
@@ -303,6 +326,7 @@ function renderTable() {
 function deleteRow(id) {
   dbDelete(id);
   renderTable();
+  renderPRCBanner();
 }
 
 function copyText(text) {
@@ -384,6 +408,7 @@ async function init() {
 
   initScanner();
   renderTable();
+  renderPRCBanner();
   setStatus('Ready', 'ready');
 
   // Scan button
@@ -405,6 +430,7 @@ async function init() {
     if (confirm('Delete all scan records?')) {
       dbClear();
       renderTable();
+      renderPRCBanner();
     }
   });
 
